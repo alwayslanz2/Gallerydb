@@ -402,7 +402,7 @@ async function uploadFileToGitHub(file, progressCallback) {
     return await response.json();
 }
 
-// Fungsi untuk memuat media dari GitHub
+// Fungsi untuk memuat media dari GitHub - DIPERBAIKI
 async function loadMediaFromGitHub() {
     try {
         galleryGrid.innerHTML = '<div class="empty-state"><p>Memuat media...</p></div>';
@@ -416,46 +416,95 @@ async function loadMediaFromGitHub() {
         
     } catch (error) {
         console.error('Error loading media:', error);
-        galleryGrid.innerHTML = '<div class="empty-state"><p>Gagal memuat media.</p></div>';
+        galleryGrid.innerHTML = '<div class="empty-state"><p>Gagal memuat media. Pastikan repository "github-media-gallery" sudah dibuat dan token memiliki izin yang cukup.</p></div>';
     }
 }
 
-// Fungsi untuk mengambil media dari GitHub
+// Fungsi untuk mengambil media dari GitHub - DIPERBAIKI
 async function fetchMediaFromGitHub() {
     const media = [];
     
-    // Ambil file dari folder images, videos, dan audio
-    const folders = ['images', 'videos', 'audio'];
-    
-    for (const folder of folders) {
-        try {
-            const response = await fetch(`${GITHUB_API_BASE}/repos/${currentUser.username}/${REPO_NAME}/contents/${folder}s`, {
-                headers: {
-                    'Authorization': `token ${currentUser.token}`,
-                    'Accept': 'application/vnd.github.v3+json'
-                }
-            });
+    try {
+        // Gunakan GitHub API untuk mendapatkan daftar file dengan recursive parameter
+        const response = await fetch(`${GITHUB_API_BASE}/repos/${currentUser.username}/${REPO_NAME}/git/trees/main?recursive=1`, {
+            headers: {
+                'Authorization': `token ${currentUser.token}`,
+                'Accept': 'application/vnd.github.v3+json'
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error('Tidak dapat mengakses repository');
+        }
+        
+        const data = await response.json();
+        
+        // Filter file yang berada di folder images, videos, atau audio
+        const mediaFiles = data.tree.filter(item => {
+            return item.path.startsWith('images/') || 
+                   item.path.startsWith('videos/') || 
+                   item.path.startsWith('audio/');
+        });
+        
+        // Konversi ke format yang diharapkan
+        for (const file of mediaFiles) {
+            const pathParts = file.path.split('/');
+            const type = pathParts[0].substring(0, pathParts[0].length - 1); // Hapus 's' di akhir
+            const timestamp = pathParts[1].split('_')[0];
             
-            if (response.ok) {
-                const files = await response.json();
-                
-                // Filter hanya file (bukan folder)
-                for (const file of files) {
-                    if (file.type === 'file') {
-                        media.push({
-                            name: file.name,
-                            path: file.path,
-                            downloadUrl: file.download_url,
-                            htmlUrl: file.html_url,
-                            type: folder.slice(0, -1), // Hapus 's' di akhir
-                            size: file.size,
-                            date: file.name.split('_')[0] // Ambil timestamp dari nama file
-                        });
+            media.push({
+                name: pathParts[1],
+                path: file.path,
+                downloadUrl: `https://raw.githubusercontent.com/${currentUser.username}/${REPO_NAME}/main/${file.path}`,
+                htmlUrl: `https://github.com/${currentUser.username}/${REPO_NAME}/blob/main/${file.path}`,
+                type: type,
+                size: 0, // Size tidak tersedia di tree API
+                date: timestamp
+            });
+        }
+        
+    } catch (error) {
+        console.error('Error fetching media files:', error);
+        
+        // Fallback: coba metode lama jika metode baru gagal
+        try {
+            console.log('Mencoba metode fallback...');
+            const folders = ['images', 'videos', 'audio'];
+            
+            for (const folder of folders) {
+                try {
+                    const response = await fetch(`${GITHUB_API_BASE}/repos/${currentUser.username}/${REPO_NAME}/contents/${folder}`, {
+                        headers: {
+                            'Authorization': `token ${currentUser.token}`,
+                            'Accept': 'application/vnd.github.v3+json'
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        const files = await response.json();
+                        
+                        // Filter hanya file (bukan folder)
+                        for (const file of files) {
+                            if (file.type === 'file') {
+                                media.push({
+                                    name: file.name,
+                                    path: file.path,
+                                    downloadUrl: file.download_url,
+                                    htmlUrl: file.html_url,
+                                    type: folder.slice(0, -1), // Hapus 's' di akhir
+                                    size: file.size,
+                                    date: file.name.split('_')[0] // Ambil timestamp dari nama file
+                                });
+                            }
+                        }
                     }
+                } catch (folderError) {
+                    console.error(`Error fetching ${folder} files:`, folderError);
                 }
             }
-        } catch (error) {
-            console.error(`Error fetching ${folder} files:`, error);
+        } catch (fallbackError) {
+            console.error('Fallback method also failed:', fallbackError);
+            throw new Error('Tidak dapat mengambil data media dari GitHub');
         }
     }
     
@@ -480,10 +529,10 @@ function renderGallery(media) {
         let thumbContent = '';
         
         if (item.type === 'image') {
-            thumbContent = `<img src="${item.downloadUrl}" alt="${item.name}" class="media-thumb" loading="lazy">`;
+            thumbContent = `<img src="${item.downloadUrl}" alt="${item.name}" class="media-thumb" loading="lazy" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjUwIiBoZWlnaHQ9IjE4MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OTk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkdhbWJhciBnYWdhbCBkaW11bGF0PC90ZXh0Pjwvc3ZnPg=='">`;
         } else if (item.type === 'video') {
             thumbContent = `
-                <video class="media-thumb" preload="metadata">
+                <video class="media-thumb" preload="metadata" poster="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjUwIiBoZWlnaHQ9IjE4MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OTk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPlZpZGVvPC90ZXh0Pjwvc3ZnPg==">
                     <source src="${item.downloadUrl}#t=0.5" type="video/mp4">
                 </video>
                 <div style="position:absolute; top:8px; right:8px; background:rgba(0,0,0,0.7); color:white; padding:2px 6px; border-radius:4px; font-size:12px;">VIDEO</div>
@@ -524,11 +573,16 @@ function openMediaModal(media) {
         const img = document.createElement('img');
         img.src = media.downloadUrl;
         img.alt = media.name;
+        img.style.maxWidth = '100%';
+        img.onerror = function() {
+            this.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIyNCIgZmlsbD0iIzk5OTk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkdhbWJhciBnYWdhbCBkaW11bGF0PC90ZXh0Pjwvc3ZnPg==';
+        };
         mediaContainer.appendChild(img);
     } else if (media.type === 'video') {
         const video = document.createElement('video');
         video.controls = true;
         video.src = media.downloadUrl;
+        video.style.maxWidth = '100%';
         mediaContainer.appendChild(video);
     } else {
         mediaContainer.innerHTML = `
