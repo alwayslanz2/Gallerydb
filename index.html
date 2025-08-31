@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Media Gallery</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <h1>GitHub Media Gallery</h1>
+            <p>Simpan dan kelola foto, video, dan audio Anda di repository GitHub</p>
+        </header>
+
+        <!-- Auth Section -->
+        <section id="auth-section" class="auth-section">
+            <div class="auth-container">
+                <div class="auth-tabs">
+                    <button class="tab-btn active" id="login-tab">Login</button>
+                    <button class="tab-btn" id="register-tab">Buat Akun Baru</button>
+                </div>
+
+                <div class="auth-content">
+                    <!-- Login Form -->
+                    <form id="login-form" class="auth-form active">
+                        <div class="form-group">
+                            <label for="login-username">Username GitHub</label>
+                            <input type="text" id="login-username" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="login-token">Personal Access Token</label>
+                            <input type="password" id="login-token" required>
+                            <small>Token perlu memiliki izin "repo" dan "workflow"</small>
+                        </div>
+                        <button type="submit" class="btn-primary">Login</button>
+                    </form>
+
+                    <!-- Register Form -->
+                    <form id="register-form" class="auth-form">
+                        <div class="form-group">
+                            <label for="register-username">Username GitHub</label>
+                            <input type="text" id="register-username" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="register-email">Email</label>
+                            <input type="email" id="register-email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="register-token">Personal Access Token</label>
+                            <input type="password" id="register-token" required>
+                            <small>Token perlu memiliki izin "repo" dan "workflow"</small>
+                        </div>
+                        <button type="submit" class="btn-primary">Buat Akun & Repository</button>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <!-- Main App Section (initially hidden) -->
+        <section id="app-section" class="app-section hidden">
+            <div class="app-header">
+                <h2>Selamat datang, <span id="user-name"></span>!</h2>
+                <button id="logout-btn" class="btn-secondary">Logout</button>
+            </div>
+
+            <!-- Upload Section -->
+            <div class="upload-section">
+                <h3>Unggah Media Baru</h3>
+                <div class="upload-options">
+                    <label class="upload-option">
+                        <input type="radio" name="media-type" value="image" checked>
+                        <div class="option-card">
+                            <div class="option-icon">📷</div>
+                            <span>Foto</span>
+                        </div>
+                    </label>
+                    <label class="upload-option">
+                        <input type="radio" name="media-type" value="video">
+                        <div class="option-card">
+                            <div class="option-icon">🎥</div>
+                            <span>Video</span>
+                        </div>
+                    </label>
+                    <label class="upload-option">
+                        <input type="radio" name="media-type" value="audio">
+                        <div class="option-card">
+                            <div class="option-icon">🎵</div>
+                            <span>Audio</span>
+                        </div>
+                    </label>
+                </div>
+
+                <div class="upload-area" id="upload-area">
+                    <div class="upload-placeholder">
+                        <div class="upload-icon">📁</div>
+                        <p>Seret file ke sini atau <span class="browse-link">telusuri</span></p>
+                        <small>Maksimal ukuran file: 25MB</small>
+                    </div>
+                    <input type="file" id="file-input" class="hidden" accept="image/*,video/*,audio/*">
+                </div>
+
+                <div class="upload-progress hidden" id="upload-progress">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progress-fill"></div>
+                    </div>
+                    <span id="progress-text">Mengunggah...</span>
+                </div>
+
+                <button id="upload-btn" class="btn-primary hidden">Unggah ke GitHub</button>
+            </div>
+
+            <!-- Gallery Section -->
+            <div class="gallery-section">
+                <h3>Media Gallery</h3>
+                <div class="gallery-filters">
+                    <button class="filter-btn active" data-filter="all">Semua</button>
+                    <button class="filter-btn" data-filter="image">Foto</button>
+                    <button class="filter-btn" data-filter="video">Video</button>
+                    <button class="filter-btn" data-filter="audio">Audio</button>
+                </div>
+                <div class="gallery-grid" id="gallery-grid">
+                    <div class="empty-state">
+                        <p>Belum ada media. Unggah file pertama Anda!</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Modal for media view -->
+    <div id="media-modal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <div id="media-container"></div>
+            <div class="media-info">
+                <h4 id="media-filename"></h4>
+                <p id="media-date"></p>
+                <a id="media-link" href="#" target="_blank" class="btn-secondary">Lihat di GitHub</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
