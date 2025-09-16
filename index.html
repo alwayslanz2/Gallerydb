@@ -50,7 +50,7 @@ header h1 {
 }
 
 header p {
-    font-size: 1.1rem;
+    font-size: 1.1rem;-
     color: var(--text-light);
 }
 
@@ -754,6 +754,7 @@ function initApp() {
     
     // Tambahkan tombol download arsip
     addArchiveButton();
+    addCreateButtons();
 }
 
 // Fungsi untuk menambahkan tombol download arsip
@@ -927,6 +928,119 @@ async function createRepository(token) {
     
     return await response.json();
 }
+
+async function createFolder(folderName) {
+    try {
+        // Path untuk folder baru (dalam folder sesuai tipe media)
+        const folderPath = `${mediaType}s/${folderName}/.gitkeep`;
+        
+        const response = await fetch(`${GITHUB_API_BASE}/repos/${currentUser.username}/${REPO_NAME}/contents/${folderPath}`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `token ${currentUser.token}`,
+                'Accept': 'application/vnd.github.v3+json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                message: `Membuat folder ${folderName} untuk ${mediaType}`,
+                content: btoa('') // File kosong untuk membuat folder
+            })
+        });
+        
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Gagal membuat folder');
+        }
+        
+        alert(`Folder '${folderName}' berhasil dibuat!`);
+        loadMediaFromGitHub(); // Refresh gallery
+        
+    } catch (error) {
+        alert('Gagal membuat folder: ' + error.message);
+        console.error('Create folder error:', error);
+    }
+}
+
+// Fungsi untuk membuat file teks baru di GitHub
+async function createTextFile(fileName, content) {
+    try {
+        // Path untuk file baru (dalam folder sesuai tipe media)
+        const filePath = `${mediaType}s/${fileName}.txt`;
+        
+        const response = await fetch(`${GITHUB_API_BASE}/repos/${currentUser.username}/${REPO_NAME}/contents/${filePath}`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `token ${currentUser.token}`,
+                'Accept': 'application/vnd.github.v3+json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                message: `Membuat file ${fileName}.txt`,
+                content: btoa(content) // Encode content ke base64
+            })
+        });
+        
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Gagal membuat file');
+        }
+        
+        alert(`File '${fileName}.txt' berhasil dibuat!`);
+        loadMediaFromGitHub(); // Refresh gallery
+        
+    } catch (error) {
+        alert('Gagal membuat file: ' + error.message);
+        console.error('Create file error:', error);
+    }
+}
+
+// Fungsi untuk menampilkan dialog pembuatan folder
+function showCreateFolderDialog() {
+    const folderName = prompt('Masukkan nama folder:');
+    if (folderName && folderName.trim() !== '') {
+        createFolder(folderName.trim());
+    }
+}
+
+// Fungsi untuk menampilkan dialog pembuatan file teks
+function showCreateTextFileDialog() {
+    const fileName = prompt('Masukkan nama file (tanpa ekstensi):');
+    if (fileName && fileName.trim() !== '') {
+        const content = prompt('Masukkan isi file:');
+        if (content !== null) {
+            createTextFile(fileName.trim(), content);
+        }
+    }
+}
+
+// Tambahkan tombol untuk membuat folder dan file
+function addCreateButtons() {
+    // Cek apakah tombol sudah ada
+    if (!document.getElementById('create-folder-btn') && !document.getElementById('create-file-btn')) {
+        const appHeader = document.querySelector('.app-header');
+        appHeader.appendChild(buttonContainer);
+        
+        // Buat container untuk tombol
+        const buttonContainer = document.createElement('div');
+        buttonContainer.style.display = 'flex';
+        buttonContainer.style.gap = '10px';
+        buttonContainer.style.marginTop = '10px';
+        buttonContainer.appendChild(folderBtn);
+        buttonContainer.appendChild(fileBtn);
+        
+        // Buat tombol untuk membuat folder
+        const folderBtn = document.createElement('button');
+        folderBtn.id = 'create-folder-btn';
+        folderBtn.className = 'btn-secondary';
+        folderBtn.innerHTML = '📁 Buat Folder';
+        folderBtn.addEventListener('click', showCreateFolderDialog);
+        
+        // Buat tombol untuk membuat file teks
+        const fileBtn = document.createElement('button');
+        fileBtn.id = 'create-file-btn';
+        fileBtn.className = 'btn-secondary';
+        fileBtn.innerHTML = '📄 Buat File Teks';
+        fileBtn.addEventListener('click', showCreateTextFileDialog);
 
 // Fungsi untuk menampilkan aplikasi utama
 function showApp() {
