@@ -194,7 +194,6 @@ header p {
     display: flex;
     gap: 16px;
     margin-bottom: 20px;
-    flex-wrap: wrap;
 }
 
 .upload-option input {
@@ -277,59 +276,6 @@ header p {
     transition: width 0.3s ease;
 }
 
-/* Folder Management */
-.folder-management {
-    margin-bottom: 20px;
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-    align-items: center;
-}
-
-.folder-input {
-    flex: 1;
-    padding: 10px 12px;
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    font-size: 1rem;
-    min-width: 200px;
-}
-
-.folder-input:focus {
-    outline: none;
-    border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(45, 164, 78, 0.2);
-}
-
-.folder-breadcrumb {
-    margin-bottom: 15px;
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 5px;
-}
-
-.folder-crumb {
-    color: var(--text-light);
-    cursor: pointer;
-    transition: var(--transition);
-}
-
-.folder-crumb:hover {
-    color: var(--primary);
-}
-
-.folder-crumb.active {
-    color: var(--text);
-    font-weight: 500;
-    cursor: default;
-}
-
-.folder-crumb-separator {
-    margin: 0 5px;
-    color: var(--text-light);
-}
-
 /* Gallery Section */
 .gallery-filters {
     display: flex;
@@ -391,22 +337,6 @@ header p {
 
 .audio-icon {
     font-size: 3rem;
-}
-
-.folder-thumb {
-    width: 100%;
-    height: 180px;
-    background: linear-gradient(135deg, #6f42c1 0%, #d63384 100%);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    color: white;
-}
-
-.folder-icon {
-    font-size: 3rem;
-    margin-bottom: 10px;
 }
 
 .media-info {
@@ -549,11 +479,6 @@ audio {
         align-items: flex-start;
         gap: 10px;
     }
-    
-    .folder-management {
-        flex-direction: column;
-        align-items: stretch;
-    }
 }
 
 @media (max-width: 480px) {
@@ -630,18 +555,6 @@ audio {
                 </div>
             </div>
             
-            <!-- Folder Management -->
-            <div class="folder-management">
-                <input type="text" id="folder-name" class="folder-input" placeholder="Nama folder baru">
-                <button id="create-folder-btn" class="btn-primary">Buat Folder</button>
-                <button id="download-archive-btn" class="btn-secondary">📦 Download Arsip</button>
-            </div>
-            
-            <!-- Breadcrumb Navigation -->
-            <div id="folder-breadcrumb" class="folder-breadcrumb">
-                <span class="folder-crumb active" data-path="">Media Gallery</span>
-            </div>
-            
             <!-- Upload Section -->
             <div class="upload-section">
                 <div class="upload-options">
@@ -694,7 +607,6 @@ audio {
                     <button class="filter-btn" data-filter="image">Gambar</button>
                     <button class="filter-btn" data-filter="video">Video</button>
                     <button class="filter-btn" data-filter="audio">Audio</button>
-                    <button class="filter-btn" data-filter="folder">Folder</button>
                 </div>
                 
                 <div id="gallery-grid" class="gallery-grid">
@@ -734,7 +646,6 @@ let currentUser = null;
 let selectedFiles = [];
 let mediaType = 'image';
 let mediaItems = [];
-let currentPath = ''; // Path folder saat ini
 
 // Elemen DOM
 const authSection = document.getElementById('auth-section');
@@ -759,10 +670,6 @@ const mediaFilename = document.getElementById('media-filename');
 const mediaDate = document.getElementById('media-date');
 const mediaLink = document.getElementById('media-link');
 const filterButtons = document.querySelectorAll('.filter-btn');
-const folderNameInput = document.getElementById('folder-name');
-const createFolderBtn = document.getElementById('create-folder-btn');
-const folderBreadcrumb = document.getElementById('folder-breadcrumb');
-const downloadArchiveBtn = document.getElementById('download-archive-btn');
 
 // Event Listeners
 document.addEventListener('DOMContentLoaded', initApp);
@@ -830,10 +737,6 @@ filterButtons.forEach(btn => {
     });
 });
 
-// Folder events
-createFolderBtn.addEventListener('click', createFolder);
-downloadArchiveBtn.addEventListener('click', downloadAllMediaArchive);
-
 // Fungsi inisialisasi aplikasi
 function initApp() {
     // Cek apakah pengguna sudah login
@@ -847,6 +750,30 @@ function initApp() {
             console.error('Error parsing saved user data:', e);
             localStorage.removeItem('githubMediaUser');
         }
+    }
+    
+    // Tambahkan tombol download arsip
+    addArchiveButton();
+}
+
+// Fungsi untuk menambahkan tombol download arsip
+function addArchiveButton() {
+    // Cek apakah tombol sudah ada
+    if (!document.getElementById('download-archive-btn')) {
+        const gallerySection = document.querySelector('.gallery-section');
+        const filtersDiv = document.querySelector('.gallery-filters');
+        
+        // Buat tombol download arsip
+        const archiveBtn = document.createElement('button');
+        archiveBtn.id = 'download-archive-btn';
+        archiveBtn.className = 'btn-secondary';
+        archiveBtn.innerHTML = '📦 Download Arsip Semua Media';
+        archiveBtn.style.marginLeft = 'auto';
+        archiveBtn.style.marginBottom = '20px';
+        archiveBtn.addEventListener('click', downloadAllMediaArchive);
+        
+        // Tambahkan ke DOM
+        filtersDiv.parentNode.insertBefore(archiveBtn, filtersDiv.nextSibling);
     }
 }
 
@@ -1006,6 +933,9 @@ function showApp() {
     authSection.classList.add('hidden');
     appSection.classList.remove('hidden');
     userNameSpan.textContent = currentUser.name;
+    
+    // Pastikan tombol arsip ada
+    addArchiveButton();
 }
 
 // Fungsi untuk menangani logout
@@ -1112,9 +1042,7 @@ async function uploadToGitHub() {
 
 // Fungsi untuk mengunggah file ke GitHub
 async function uploadFileToGitHub(file, progressCallback) {
-    // Buat path dengan mempertimbangkan folder saat ini
-    const basePath = currentPath ? `${currentPath}/` : '';
-    const path = `${basePath}${mediaType}s/${Date.now()}_${file.name}`;
+    const path = `${mediaType}s/${Date.now()}_${file.name}`;
     const content = await toBase64(file);
     
     // GitHub API mengharuskan content dalam format base64
@@ -1151,9 +1079,6 @@ async function loadMediaFromGitHub() {
         // Tampilkan media di gallery
         renderGallery(media);
         
-        // Update breadcrumb
-        updateBreadcrumb();
-        
     } catch (error) {
         console.error('Error loading media:', error);
         galleryGrid.innerHTML = '<div class="empty-state"><p>Gagal memuat media. Pastikan repository "github-media-gallery" sudah dibuat dan token memiliki izin yang cukup.</p></div>';
@@ -1163,15 +1088,10 @@ async function loadMediaFromGitHub() {
 // Fungsi untuk mengambil media dari GitHub - DIPERBAIKI
 async function fetchMediaFromGitHub() {
     const media = [];
-    const folders = [];
     
     try {
         // Gunakan GitHub API untuk mendapatkan daftar file dengan recursive parameter
-        const apiPath = currentPath ? 
-            `${GITHUB_API_BASE}/repos/${currentUser.username}/${REPO_NAME}/contents/${currentPath}` :
-            `${GITHUB_API_BASE}/repos/${currentUser.username}/${REPO_NAME}/contents`;
-            
-        const response = await fetch(apiPath, {
+        const response = await fetch(`${GITHUB_API_BASE}/repos/${currentUser.username}/${REPO_NAME}/git/trees/main?recursive=1`, {
             headers: {
                 'Authorization': `token ${currentUser.token}`,
                 'Accept': 'application/vnd.github.v3+json'
@@ -1182,64 +1102,85 @@ async function fetchMediaFromGitHub() {
             throw new Error('Tidak dapat mengakses repository');
         }
         
-        const contents = await response.json();
+        const data = await response.json();
         
-        // Proses setiap item
-        for (const item of contents) {
-            if (item.type === 'dir') {
-                // Ini adalah folder
-                folders.push({
-                    name: item.name,
-                    path: item.path,
-                    type: 'folder',
-                    htmlUrl: item.html_url,
-                    date: item.name // Untuk folder, gunakan nama sebagai tanggal
-                });
-            } else if (item.type === 'file') {
-                // Ini adalah file
-                const pathParts = item.path.split('/');
-                const fileName = pathParts[pathParts.length - 1];
-                
-                // Tentukan tipe file berdasarkan path
-                let type = 'other';
-                if (item.path.includes('/images/')) type = 'image';
-                else if (item.path.includes('/videos/')) type = 'video';
-                else if (item.path.includes('/audio/')) type = 'audio';
-                
-                // Hanya tambahkan jika itu adalah file media
-                if (type !== 'other') {
-                    media.push({
-                        name: fileName,
-                        path: item.path,
-                        downloadUrl: item.download_url,
-                        htmlUrl: item.html_url,
-                        type: type,
-                        size: item.size,
-                        date: fileName.split('_')[0] // Ambil timestamp dari nama file
-                    });
-                }
-            }
+        // Filter file yang berada di folder images, videos, atau audio
+        const mediaFiles = data.tree.filter(item => {
+            return item.path.startsWith('images/') || 
+                   item.path.startsWith('videos/') || 
+                   item.path.startsWith('audio/');
+        });
+        
+        // Konversi ke format yang diharapkan
+        for (const file of mediaFiles) {
+            const pathParts = file.path.split('/');
+            const type = pathParts[0].substring(0, pathParts[0].length - 1); // Hapus 's' di akhir
+            const timestamp = pathParts[1].split('_')[0];
+            
+            media.push({
+                name: pathParts[1],
+                path: file.path,
+                downloadUrl: `https://raw.githubusercontent.com/${currentUser.username}/${REPO_NAME}/main/${file.path}`,
+                htmlUrl: `https://github.com/${currentUser.username}/${REPO_NAME}/blob/main/${file.path}`,
+                type: type,
+                size: 0, // Size tidak tersedia di tree API
+                date: timestamp
+            });
         }
         
     } catch (error) {
         console.error('Error fetching media files:', error);
-        throw new Error('Tidak dapat mengambil data media dari GitHub');
+        
+        // Fallback: coba metode lama jika metode baru gagal
+        try {
+            console.log('Mencoba metode fallback...');
+            const folders = ['images', 'videos', 'audio'];
+            
+            for (const folder of folders) {
+                try {
+                    const response = await fetch(`${GITHUB_API_BASE}/repos/${currentUser.username}/${REPO_NAME}/contents/${folder}`, {
+                        headers: {
+                            'Authorization': `token ${currentUser.token}`,
+                            'Accept': 'application/vnd.github.v3+json'
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        const files = await response.json();
+                        
+                        // Filter hanya file (bukan folder)
+                        for (const file of files) {
+                            if (file.type === 'file') {
+                                media.push({
+                                    name: file.name,
+                                    path: file.path,
+                                    downloadUrl: file.download_url,
+                                    htmlUrl: file.html_url,
+                                    type: folder.slice(0, -1), // Hapus 's' di akhir
+                                    size: file.size,
+                                    date: file.name.split('_')[0] // Ambil timestamp dari nama file
+                                });
+                            }
+                        }
+                    }
+                } catch (folderError) {
+                    console.error(`Error fetching ${folder} files:`, folderError);
+                }
+            }
+        } catch (fallbackError) {
+            console.error('Fallback method also failed:', fallbackError);
+            throw new Error('Tidak dapat mengambil data media dari GitHub');
+        }
     }
     
-    // Gabungkan folder dan media, lalu urutkan
-    const allItems = [...folders, ...media];
-    return allItems.sort((a, b) => {
-        // Folder di atas, lalu urutkan berdasarkan tanggal (terbaru pertama)
-        if (a.type === 'folder' && b.type !== 'folder') return -1;
-        if (a.type !== 'folder' && b.type === 'folder') return 1;
-        return parseInt(b.date || 0) - parseInt(a.date || 0);
-    });
+    // Urutkan berdasarkan tanggal (terbaru pertama)
+    return media.sort((a, b) => parseInt(b.date) - parseInt(a.date));
 }
 
 // Fungsi untuk merender gallery
 function renderGallery(media) {
     if (media.length === 0) {
-        galleryGrid.innerHTML = '<div class="empty-state"><p>Belum ada media di folder ini.</p></div>';
+        galleryGrid.innerHTML = '<div class="empty-state"><p>Belum ada media. Unggah file pertama Anda!</p></div>';
         return;
     }
     
@@ -1252,127 +1193,42 @@ function renderGallery(media) {
         
         let thumbContent = '';
         
-        if (item.type === 'folder') {
-            thumbContent = `
-                <div class="folder-thumb">
-                    <div class="folder-icon">📁</div>
-                    <span>${item.name}</span>
-                </div>
-            `;
-        } else if (item.type === 'image') {
-            thumbContent = `<img src="${item.downloadUrl}" alt="${item.name}" class="media-thumb">`;
+        if (item.type === 'image') {
+            thumbContent = `<img src="${item.downloadUrl}" alt="${item.name}" class="media-thumb" loading="lazy" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjUwIiBoZWlnaHQ9IjE4MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OTk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkdhbWJhciBnYWdhbCBkaW11bGF0PC90ZXh0Pjwvc3ZnPg=='">`;
         } else if (item.type === 'video') {
-            thumbContent = `<video src="${item.downloadUrl}" class="media-thumb" poster="data:image/gif,AAAA"></video>`;
-        } else if (item.type === 'audio') {
+            thumbContent = `
+                <video class="media-thumb" preload="metadata" poster="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjUwIiBoZWlnaHQ9IjE4MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OTk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPlZpZGVvPC90ZXh0Pjwvc3ZnPg==">
+                    <source src="${item.downloadUrl}#t=0.5" type="video/mp4">
+                </video>
+                <div style="position:absolute; top:8px; right:8px; background:rgba(0,0,0,0.7); color:white; padding:2px 6px; border-radius:4px; font-size:12px;">VIDEO</div>
+            `;
+        } else {
             thumbContent = `
                 <div class="audio-thumb">
                     <div class="audio-icon">🎵</div>
                 </div>
+                <div style="position:absolute; top:8px; right:8px; background:rgba(0,0,0,0.7); color:white; padding:2px 6px; border-radius:4px; font-size:12px;">AUDIO</div>
             `;
         }
         
         card.innerHTML = `
-            ${thumbContent}
+            <div style="position:relative;">
+                ${thumbContent}
+            </div>
             <div class="media-info">
-                <h4>${item.name}</h4>
-                <p>${item.type === 'folder' ? 'Folder' : formatFileSize(item.size)} • ${formatDate(item.date)}</p>
+                <h4>${item.name.split('_').slice(1).join('_')}</h4>
+                <p>${formatDate(item.date)}</p>
             </div>
         `;
         
-        card.addEventListener('click', () => {
-            if (item.type === 'folder') {
-                // Navigasi ke folder
-                navigateToFolder(item.path);
-            } else {
-                // Tampilkan media di modal
-                showMediaModal(item);
-            }
-        });
-        
+        card.addEventListener('click', () => openMediaModal(item));
         galleryGrid.appendChild(card);
     });
 }
 
-// Fungsi untuk menavigasi ke folder
-function navigateToFolder(path) {
-    currentPath = path;
-    loadMediaFromGitHub();
-}
-
-// Fungsi untuk memperbarui breadcrumb
-function updateBreadcrumb() {
-    const parts = currentPath.split('/').filter(part => part);
-    
-    let breadcrumbHtml = '<span class="folder-crumb" data-path="">Media Gallery</span>';
-    
-    let currentPathSoFar = '';
-    parts.forEach(part => {
-        currentPathSoFar += `${part}/`;
-        breadcrumbHtml += `
-            <span class="folder-crumb-separator">/</span>
-            <span class="folder-crumb" data-path="${currentPathSoFar.slice(0, -1)}">${part}</span>
-        `;
-    });
-    
-    folderBreadcrumb.innerHTML = breadcrumbHtml;
-    
-    // Tambahkan event listener untuk breadcrumb
-    folderBreadcrumb.querySelectorAll('.folder-crumb').forEach(crumb => {
-        crumb.addEventListener('click', () => {
-            const path = crumb.dataset.path;
-            currentPath = path;
-            loadMediaFromGitHub();
-        });
-    });
-}
-
-// Fungsi untuk membuat folder baru
-async function createFolder() {
-    const folderName = folderNameInput.value.trim();
-    if (!folderName) {
-        alert('Masukkan nama folder terlebih dahulu');
-        return;
-    }
-    
-    try {
-        // Buat path folder
-        const basePath = currentPath ? `${currentPath}/` : '';
-        const path = `${basePath}${folderName}`;
-        
-        // GitHub API mengharuskan content dalam format base64 (kosong untuk folder)
-        const response = await fetch(`${GITHUB_API_BASE}/repos/${currentUser.username}/${REPO_NAME}/contents/${path}/.gitkeep`, {
-            method: 'PUT',
-            headers: {
-                'Authorization': `token ${currentUser.token}`,
-                'Accept': 'application/vnd.github.v3+json',
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                message: `Membuat folder ${folderName}`,
-                content: '' // File kosong
-            })
-        });
-        
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.message || 'Gagal membuat folder');
-        }
-        
-        // Reset input
-        folderNameInput.value = '';
-        
-        // Refresh gallery
-        loadMediaFromGitHub();
-        
-    } catch (error) {
-        alert('Gagal membuat folder: ' + error.message);
-        console.error('Create folder error:', error);
-    }
-}
-
-// Fungsi untuk menampilkan media di modal
-function showMediaModal(media) {
-    mediaFilename.textContent = media.name;
+// Fungsi untuk membuka modal media
+function openMediaModal(media) {
+    mediaFilename.textContent = media.name.split('_').slice(1).join('_');
     mediaDate.textContent = `Diunggah pada: ${formatDate(media.date)}`;
     mediaLink.href = media.htmlUrl;
     
@@ -1383,33 +1239,26 @@ function showMediaModal(media) {
         img.src = media.downloadUrl;
         img.alt = media.name;
         img.style.maxWidth = '100%';
-        img.style.maxHeight = '70vh';
+        img.onerror = function() {
+            this.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIyNCIgZmlsbD0iIzk5OTk5OSIgdGV4dC1hbmNob3I�Im1pZGRsZSIgZHk9Ii4zZW0iPkdhbWJhciBnYWdhbCBkaW11bGF0PC90ZXh0Pjwvc3ZnPg==';
+        };
         mediaContainer.appendChild(img);
     } else if (media.type === 'video') {
         const video = document.createElement('video');
-        video.src = media.downloadUrl;
         video.controls = true;
+        video.src = media.downloadUrl;
         video.style.maxWidth = '100%';
-        video.style.maxHeight = '70vh';
         mediaContainer.appendChild(video);
-    } else if (media.type === 'audio') {
-        const audioContainer = document.createElement('div');
-        audioContainer.className = 'audio-container';
-        
-        const audioIcon = document.createElement('div');
-        audioIcon.className = 'audio-icon';
-        audioIcon.innerHTML = '🎵';
-        audioIcon.style.fontSize = '4rem';
-        audioIcon.style.marginBottom = '20px';
-        audioContainer.appendChild(audioIcon);
-        
-        const audio = document.createElement('audio');
-        audio.src = media.downloadUrl;
-        audio.controls = true;
-        audio.style.width = '100%';
-        audioContainer.appendChild(audio);
-        
-        mediaContainer.appendChild(audioContainer);
+    } else {
+        mediaContainer.innerHTML = `
+            <div class="audio-container">
+                <div class="audio-icon" style="font-size: 4rem;">🎵</div>
+                <audio controls>
+                    <source src="${media.downloadUrl}" type="audio/mpeg">
+                    Browser Anda tidak mendukung pemutar audio.
+                </audio>
+            </div>
+        `;
     }
     
     mediaModal.classList.remove('hidden');
@@ -1417,9 +1266,9 @@ function showMediaModal(media) {
 
 // Fungsi untuk memfilter gallery
 function filterGallery(filter) {
-    const cards = galleryGrid.querySelectorAll('.media-card');
+    const mediaCards = document.querySelectorAll('.media-card');
     
-    cards.forEach(card => {
+    mediaCards.forEach(card => {
         if (filter === 'all' || card.dataset.type === filter) {
             card.style.display = 'block';
         } else {
@@ -1428,85 +1277,74 @@ function filterGallery(filter) {
     });
 }
 
-// Fungsi untuk mengunduh arsip semua media
+// Fungsi untuk mendownload arsip semua media
 async function downloadAllMediaArchive() {
+    if (mediaItems.length === 0) {
+        alert('Tidak ada media untuk didownload.');
+        return;
+    }
+    
     try {
         // Tampilkan indikator loading
-        const originalText = downloadArchiveBtn.textContent;
-        downloadArchiveBtn.textContent = '⏳ Membuat arsip...';
-        downloadArchiveBtn.disabled = true;
+        const archiveBtn = document.getElementById('download-archive-btn');
+        const originalText = archiveBtn.innerHTML;
+        archiveBtn.innerHTML = '⏳ Membuat arsip...';
+        archiveBtn.disabled = true;
         
-        // Buat arsip ZIP menggunakan JSZip
+        // Buat instance JSZip
         const zip = new JSZip();
         
-        // Fungsi rekursif untuk menambahkan file dan folder ke ZIP
-        async function addToZip(path, zipFolder) {
-            const apiPath = path ? 
-                `${GITHUB_API_BASE}/repos/${currentUser.username}/${REPO_NAME}/contents/${path}` :
-                `${GITHUB_API_BASE}/repos/${currentUser.username}/${REPO_NAME}/contents`;
-                
-            const response = await fetch(apiPath, {
-                headers: {
-                    'Authorization': `token ${currentUser.token}`,
-                    'Accept': 'application/vnd.github.v3+json'
-                }
-            });
+        // Buat folder untuk setiap tipe media
+        const imageFolder = zip.folder('images');
+        const videoFolder = zip.folder('videos');
+        const audioFolder = zip.folder('audio');
+        
+        // Unduh setiap file dan tambahkan ke zip
+        for (let i = 0; i < mediaItems.length; i++) {
+            const media = mediaItems[i];
+            const response = await fetch(media.downloadUrl);
+            const blob = await response.blob();
             
-            if (!response.ok) return;
-            
-            const contents = await response.json();
-            
-            for (const item of contents) {
-                if (item.type === 'dir') {
-                    // Buat folder baru di ZIP dan tambahkan isinya
-                    const newFolder = zipFolder.folder(item.name);
-                    await addToZip(item.path, newFolder);
-                } else if (item.type === 'file') {
-                    // Tambahkan file ke ZIP
-                    try {
-                        const fileResponse = await fetch(item.download_url);
-                        const blob = await fileResponse.blob();
-                        zipFolder.file(item.name, blob);
-                    } catch (error) {
-                        console.error(`Gagal mengunduh file ${item.name}:`, error);
-                    }
-                }
+            // Tambahkan ke folder yang sesuai
+            if (media.type === 'image') {
+                imageFolder.file(media.name, blob);
+            } else if (media.type === 'video') {
+                videoFolder.file(media.name, blob);
+            } else if (media.type === 'audio') {
+                audioFolder.file(media.name, blob);
             }
+            
+            // Update progress (opsional)
+            archiveBtn.innerHTML = `⏳ Mengunduh ${i + 1}/${mediaItems.length}...`;
         }
         
-        // Mulai membuat ZIP dari root
-        await addToZip('', zip);
-        
-        // Hasilkan file ZIP
+        // Generate file zip
+        archiveBtn.innerHTML = '⏳ Membuat file ZIP...';
         const zipBlob = await zip.generateAsync({type: 'blob'});
         
-        // Buat URL untuk download
-        const downloadUrl = URL.createObjectURL(zipBlob);
-        const a = document.createElement('a');
-        a.href = downloadUrl;
-        a.download = `github-media-gallery-${new Date().toISOString().split('T')[0]}.zip`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        
-        // Bersihkan URL
-        setTimeout(() => URL.revokeObjectURL(downloadUrl), 100);
+        // Buat link download
+        const downloadLink = document.createElement('a');
+        downloadLink.href = URL.createObjectURL(zipBlob);
+        downloadLink.download = `github-media-gallery-${new Date().toISOString().split('T')[0]}.zip`;
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
         
         // Kembalikan teks tombol
-        downloadArchiveBtn.textContent = originalText;
-        downloadArchiveBtn.disabled = false;
+        archiveBtn.innerHTML = originalText;
+        archiveBtn.disabled = false;
         
     } catch (error) {
         console.error('Error creating archive:', error);
         alert('Gagal membuat arsip: ' + error.message);
         
-        // Kembalikan teks tombol jika gagal
-        downloadArchiveBtn.textContent = '📦 Download Arsip';
-        downloadArchiveBtn.disabled = false;
+        const archiveBtn = document.getElementById('download-archive-btn');
+        archiveBtn.innerHTML = '📦 Download Arsip Semua Media';
+        archiveBtn.disabled = false;
     }
 }
 
-// Fungsi utilitas: Convert file ke base64
+// Fungsi utilitas: Convert file to base64
 function toBase64(file) {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -1529,21 +1367,14 @@ function formatFileSize(bytes) {
 
 // Fungsi utilitas: Format tanggal
 function formatDate(timestamp) {
-    if (!timestamp) return 'Tanggal tidak diketahui';
-    
-    // Jika timestamp adalah string nama folder, gunakan itu
-    if (isNaN(timestamp)) {
-        return timestamp;
-    }
-    
     const date = new Date(parseInt(timestamp));
-    return new Intl.DateTimeFormat('id-ID', {
+    return date.toLocaleDateString('id-ID', {
         year: 'numeric',
         month: 'long',
         day: 'numeric',
         hour: '2-digit',
         minute: '2-digit'
-    }).format(date);
+    });
 }
     </script>
 </body>
