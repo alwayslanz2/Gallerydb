@@ -1,0 +1,1550 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Media Gallery</title>
+<style>
+:root {
+    --primary: #2da44e;
+    --primary-dark: #2c974b;
+    --secondary: #f6f8fa;
+    --text: #24292f;
+    --text-light: #57606a;
+    --border: #d0d7de;
+    --error: #cf222e;
+    --card-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    --transition: all 0.3s ease;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', sans-serif;
+}
+
+body {
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    color: var(--text);
+    line-height: 1.5;
+    min-height: 100vh;
+}
+
+.container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+header {
+    text-align: center;
+    padding: 40px 0;
+}
+
+header h1 {
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+    color: var(--primary);
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+}
+
+header p {
+    font-size: 1.1rem;
+    color: var(--text-light);
+}
+
+/* Auth Section */
+.auth-section {
+    background: white;
+    border-radius: 12px;
+    box-shadow: var(--card-shadow);
+    padding: 0;
+    margin: 0 auto 40px;
+    max-width: 400px;
+}
+
+.auth-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--border);
+}
+
+.tab-btn {
+    flex: 1;
+    padding: 16px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--text-light);
+    transition: var(--transition);
+}
+
+.tab-btn.active {
+    color: var(--primary);
+    border-bottom: 2px solid var(--primary);
+    font-weight: 600;
+}
+
+.tab-btn:hover {
+    background-color: var(--secondary);
+}
+
+.auth-content {
+    padding: 24px;
+}
+
+.auth-form {
+    display: none;
+}
+
+.auth-form.active {
+    display: block;
+}
+
+.form-group {
+    margin-bottom: 16px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 500;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 1rem;
+    transition: var(--transition);
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(45, 164, 78, 0.2);
+}
+
+.form-group small {
+    color: var(--text-light);
+    font-size: 0.85rem;
+}
+
+/* Buttons */
+.btn-primary {
+    background-color: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 10px 16px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+    width: 100%;
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-dark);
+}
+
+.btn-secondary {
+    background-color: var(--secondary);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 16px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.btn-secondary:hover {
+    background-color: #eaeef2;
+}
+
+/* App Section */
+.app-section {
+    background: white;
+    border-radius: 12px;
+    box-shadow: var(--card-shadow);
+    padding: 24px;
+    margin-bottom: 40px;
+}
+
+.app-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+}
+
+.app-header h2 {
+    font-size: 1.5rem;
+}
+
+/* Upload Section */
+.upload-options {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.upload-option input {
+    display: none;
+}
+
+.option-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 16px;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: var(--transition);
+    min-width: 100px;
+}
+
+.option-card:hover {
+    border-color: var(--primary);
+}
+
+.upload-option input:checked + .option-card {
+    border-color: var(--primary);
+    background-color: rgba(45, 164, 78, 0.05);
+}
+
+.option-icon {
+    font-size: 2rem;
+    margin-bottom: 8px;
+}
+
+.upload-area {
+    border: 2px dashed var(--border);
+    border-radius: 8px;
+    padding: 40px 20px;
+    text-align: center;
+    margin-bottom: 20px;
+    transition: var(--transition);
+    position: relative;
+}
+
+.upload-area.drag-over {
+    border-color: var(--primary);
+    background-color: rgba(45, 164, 78, 0.05);
+}
+
+.upload-placeholder {
+    pointer-events: none;
+}
+
+.upload-icon {
+    font-size: 3rem;
+    margin-bottom: 16px;
+    opacity: 0.7;
+}
+
+.browse-link {
+    color: var(--primary);
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+.upload-progress {
+    margin-bottom: 20px;
+}
+
+.progress-bar {
+    height: 8px;
+    background-color: var(--secondary);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 8px;
+}
+
+.progress-fill {
+    height: 100%;
+    background-color: var(--primary);
+    width: 0%;
+    transition: width 0.3s ease;
+}
+
+/* Folder Management */
+.folder-management {
+    margin-bottom: 20px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.folder-input {
+    flex: 1;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 1rem;
+    min-width: 200px;
+}
+
+.folder-input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(45, 164, 78, 0.2);
+}
+
+.folder-breadcrumb {
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+
+.folder-crumb {
+    color: var(--text-light);
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.folder-crumb:hover {
+    color: var(--primary);
+}
+
+.folder-crumb.active {
+    color: var(--text);
+    font-weight: 500;
+    cursor: default;
+}
+
+.folder-crumb-separator {
+    margin: 0 5px;
+    color: var(--text-light);
+}
+
+/* Gallery Section */
+.gallery-filters {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.filter-btn {
+    padding: 6px 12px;
+    background-color: var(--secondary);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    cursor: pointer;
+    transition: var(--transition);
+    font-size: 0.9rem;
+}
+
+.filter-btn.active, .filter-btn:hover {
+    background-color: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+
+.gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.media-card {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: var(--card-shadow);
+    transition: var(--transition);
+    cursor: pointer;
+}
+
+.media-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+}
+
+.media-thumb {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+}
+
+.audio-thumb {
+    width: 100%;
+    height: 180px;
+    background: linear-gradient(135deg, #2da44e 0%, #0969da 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.audio-icon {
+    font-size: 3rem;
+}
+
+.folder-thumb {
+    width: 100%;
+    height: 180px;
+    background: linear-gradient(135deg, #6f42c1 0%, #d63384 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+.folder-icon {
+    font-size: 3rem;
+    margin-bottom: 10px;
+}
+
+.media-info {
+    padding: 12px;
+}
+
+.media-info h4 {
+    margin-bottom: 4px;
+    font-size: 0.95rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.media-info p {
+    color: var(--text-light);
+    font-size: 0.85rem;
+}
+
+.empty-state {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-light);
+}
+
+/* Modal */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 20px;
+}
+
+.modal.hidden {
+    display: none;
+}
+
+.modal-content {
+    background: white;
+    border-radius: 12px;
+    max-width: 800px;
+    width: 100%;
+    max-height: 90vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-body {
+    padding: 20px;
+    overflow-y: auto;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-footer {
+    padding: 16px 20px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.close-modal {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--text-light);
+}
+
+.close-modal:hover {
+    color: var(--text);
+}
+
+.audio-container {
+    text-align: center;
+    width: 100%;
+}
+
+audio {
+    width: 100%;
+    margin-top: 20px;
+}
+
+/* Utility Classes */
+.hidden {
+    display: none !important;
+}
+
+.file-preview ul {
+    text-align: left;
+    max-height: 200px;
+    overflow-y: auto;
+    margin-top: 10px;
+}
+
+.file-preview li {
+    margin-bottom: 5px;
+    font-size: 0.9rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .gallery-grid {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    }
+    
+    .upload-options {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .option-card {
+        flex-direction: row;
+        gap: 10px;
+    }
+    
+    .app-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    
+    .folder-management {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
+
+@media (max-width: 480px) {
+    header h1 {
+        font-size: 2rem;
+    }
+    
+    .gallery-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .auth-section {
+        margin: 0 10px 40px;
+    }
+}
+</style>
+    <!-- JSZip untuk membuat arsip ZIP -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>GitHub Media Gallery</h1>
+            <p>Unggah dan kelola media Anda dengan penyimpanan GitHub</p>
+        </header>
+        
+        <!-- Bagian Autentikasi -->
+        <section id="auth-section" class="auth-section">
+            <div class="auth-tabs">
+                <button id="login-tab" class="tab-btn active">Login</button>
+                <button id="register-tab" class="tab-btn">Daftar</button>
+            </div>
+            
+            <div class="auth-content">
+                <form id="login-form" class="auth-form active">
+                    <div class="form-group">
+                        <label for="login-username">Username GitHub</label>
+                        <input type="text" id="login-username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="login-token">Token GitHub</label>
+                        <input type="password" id="login-token" required>
+                        <small>Token harus memiliki izin "repo"</small>
+                    </div>
+                    <button type="submit" class="btn-primary">Login</button>
+                </form>
+                
+                <form id="register-form" class="auth-form">
+                    <div class="form-group">
+                        <label for="register-username">Username GitHub</label>
+                        <input type="text" id="register-username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="register-email">Email</label>
+                        <input type="email" id="register-email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="register-token">Token GitHub</label>
+                        <input type="password" id="register-token" required>
+                        <small>Token harus memiliki izin "repo"</small>
+                    </div>
+                    <button type="submit" class="btn-primary">Daftar</button>
+                </form>
+            </div>
+        </section>
+        
+        <!-- Bagian Aplikasi Utama -->
+        <section id="app-section" class="app-section hidden">
+            <div class="app-header">
+                <h2>Galeri Media Saya</h2>
+                <div>
+                    <span id="user-name"></span>
+                    <button id="logout-btn" class="btn-secondary" style="margin-left: 10px;">Logout</button>
+                </div>
+            </div>
+            
+            <!-- Folder Management -->
+            <div class="folder-management">
+                <input type="text" id="folder-name" class="folder-input" placeholder="Nama folder baru">
+                <button id="create-folder-btn" class="btn-primary">Buat Folder</button>
+                <button id="download-archive-btn" class="btn-secondary">📦 Download Arsip</button>
+            </div>
+            
+            <!-- Breadcrumb Navigation -->
+            <div id="folder-breadcrumb" class="folder-breadcrumb">
+                <span class="folder-crumb active" data-path="">Media Gallery</span>
+            </div>
+            
+            <!-- Upload Section -->
+            <div class="upload-section">
+                <div class="upload-options">
+                    <label class="upload-option">
+                        <input type="radio" name="media-type" value="image" checked>
+                        <div class="option-card">
+                            <div class="option-icon">🖼️</div>
+                            <span>Gambar</span>
+                        </div>
+                    </label>
+                    <label class="upload-option">
+                        <input type="radio" name="media-type" value="video">
+                        <div class="option-card">
+                            <div class="option-icon">🎥</div>
+                            <span>Video</span>
+                        </div>
+                    </label>
+                    <label class="upload-option">
+                        <input type="radio" name="media-type" value="audio">
+                        <div class="option-card">
+                            <div class="option-icon">🎵</div>
+                            <span>Audio</span>
+                        </div>
+                    </label>
+                </div>
+                
+                <div id="upload-area" class="upload-area">
+                    <div class="upload-placeholder">
+                        <div class="upload-icon">📁</div>
+                        <p>Seret file ke sini atau <span class="browse-link">telusuri</span></p>
+                        <small>Maksimal ukuran file: 25MB</small>
+                    </div>
+                </div>
+                <input type="file" id="file-input" multiple style="display: none;">
+                
+                <div id="upload-progress" class="upload-progress hidden">
+                    <div class="progress-bar">
+                        <div id="progress-fill" class="progress-fill"></div>
+                    </div>
+                    <div id="progress-text" class="progress-text">Mempersiapkan...</div>
+                </div>
+                
+                <button id="upload-btn" class="btn-primary hidden">Unggah File</button>
+            </div>
+            
+            <!-- Gallery Section -->
+            <div class="gallery-section">
+                <div class="gallery-filters">
+                    <button class="filter-btn active" data-filter="all">Semua</button>
+                    <button class="filter-btn" data-filter="image">Gambar</button>
+                    <button class="filter-btn" data-filter="video">Video</button>
+                    <button class="filter-btn" data-filter="audio">Audio</button>
+                    <button class="filter-btn" data-filter="folder">Folder</button>
+                </div>
+                
+                <div id="gallery-grid" class="gallery-grid">
+                    <div class="empty-state">
+                        <p>Belum ada media. Unggah file pertama Anda!</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+    
+    <!-- Modal untuk menampilkan media -->
+    <div id="media-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="media-filename"></h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="media-container"></div>
+            </div>
+            <div class="modal-footer">
+                <p id="media-date"></p>
+                <a id="media-link" target="_blank" class="btn-primary">Lihat di GitHub</a>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+    // Konstanta aplikasi
+const GITHUB_API_BASE = 'https://api.github.com';
+const REPO_NAME = 'github-media-gallery';
+const REPO_DESCRIPTION = 'Repository untuk menyimpan media dari GitHub Media Gallery';
+
+// State aplikasi
+let currentUser = null;
+let selectedFiles = [];
+let mediaType = 'image';
+let mediaItems = [];
+let currentPath = ''; // Path folder saat ini
+
+// Elemen DOM
+const authSection = document.getElementById('auth-section');
+const appSection = document.getElementById('app-section');
+const loginForm = document.getElementById('login-form');
+const registerForm = document.getElementById('register-form');
+const loginTab = document.getElementById('login-tab');
+const registerTab = document.getElementById('register-tab');
+const logoutBtn = document.getElementById('logout-btn');
+const userNameSpan = document.getElementById('user-name');
+const uploadArea = document.getElementById('upload-area');
+const fileInput = document.getElementById('file-input');
+const uploadBtn = document.getElementById('upload-btn');
+const uploadProgress = document.getElementById('upload-progress');
+const progressFill = document.getElementById('progress-fill');
+const progressText = document.getElementById('progress-text');
+const galleryGrid = document.getElementById('gallery-grid');
+const mediaModal = document.getElementById('media-modal');
+const closeModal = document.querySelector('.close-modal');
+const mediaContainer = document.getElementById('media-container');
+const mediaFilename = document.getElementById('media-filename');
+const mediaDate = document.getElementById('media-date');
+const mediaLink = document.getElementById('media-link');
+const filterButtons = document.querySelectorAll('.filter-btn');
+const folderNameInput = document.getElementById('folder-name');
+const createFolderBtn = document.getElementById('create-folder-btn');
+const folderBreadcrumb = document.getElementById('folder-breadcrumb');
+const downloadArchiveBtn = document.getElementById('download-archive-btn');
+
+// Event Listeners
+document.addEventListener('DOMContentLoaded', initApp);
+
+loginTab.addEventListener('click', () => switchAuthTab('login'));
+registerTab.addEventListener('click', () => switchAuthTab('register'));
+loginForm.addEventListener('submit', handleLogin);
+registerForm.addEventListener('submit', handleRegister);
+logoutBtn.addEventListener('click', handleLogout);
+
+// Event listeners untuk upload
+document.querySelectorAll('input[name="media-type"]').forEach(input => {
+    input.addEventListener('change', (e) => {
+        mediaType = e.target.value;
+        resetUploadArea();
+    });
+});
+
+uploadArea.addEventListener('click', () => fileInput.click());
+fileInput.addEventListener('change', handleFileSelect);
+
+// Drag and drop
+uploadArea.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    uploadArea.classList.add('drag-over');
+});
+
+uploadArea.addEventListener('dragleave', () => {
+    uploadArea.classList.remove('drag-over');
+});
+
+uploadArea.addEventListener('drop', (e) => {
+    e.preventDefault();
+    uploadArea.classList.remove('drag-over');
+    
+    if (e.dataTransfer.files.length) {
+        handleFiles(e.dataTransfer.files);
+    }
+});
+
+uploadBtn.addEventListener('click', uploadToGitHub);
+
+// Modal events
+closeModal.addEventListener('click', () => {
+    mediaModal.classList.add('hidden');
+});
+
+mediaModal.addEventListener('click', (e) => {
+    if (e.target === mediaModal) {
+        mediaModal.classList.add('hidden');
+    }
+});
+
+// Filter events
+filterButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+        const filter = btn.dataset.filter;
+        
+        // Update UI
+        filterButtons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        
+        // Filter gallery
+        filterGallery(filter);
+    });
+});
+
+// Folder events
+createFolderBtn.addEventListener('click', createFolder);
+downloadArchiveBtn.addEventListener('click', downloadAllMediaArchive);
+
+// Fungsi inisialisasi aplikasi
+function initApp() {
+    // Cek apakah pengguna sudah login
+    const savedUser = localStorage.getItem('githubMediaUser');
+    if (savedUser) {
+        try {
+            currentUser = JSON.parse(savedUser);
+            showApp();
+            loadMediaFromGitHub();
+        } catch (e) {
+            console.error('Error parsing saved user data:', e);
+            localStorage.removeItem('githubMediaUser');
+        }
+    }
+}
+
+// Fungsi untuk beralih antara tab login/register
+function switchAuthTab(tab) {
+    if (tab === 'login') {
+        loginTab.classList.add('active');
+        registerTab.classList.remove('active');
+        loginForm.classList.add('active');
+        registerForm.classList.remove('active');
+    } else {
+        registerTab.classList.add('active');
+        loginTab.classList.remove('active');
+        registerForm.classList.add('active');
+        loginForm.classList.remove('active');
+    }
+}
+
+// Fungsi untuk menangani login
+async function handleLogin(e) {
+    e.preventDefault();
+    
+    const username = document.getElementById('login-username').value;
+    const token = document.getElementById('login-token').value;
+    
+    try {
+        // Verifikasi kredensial dengan GitHub API
+        const userData = await verifyGitHubCredentials(username, token);
+        
+        // Simpan data pengguna
+        currentUser = {
+            username,
+            token,
+            avatarUrl: userData.avatar_url,
+            name: userData.name || username
+        };
+        
+        localStorage.setItem('githubMediaUser', JSON.stringify(currentUser));
+        
+        // Periksa apakah repository sudah ada
+        const repoExists = await checkRepositoryExists(username, token, REPO_NAME);
+        
+        if (!repoExists) {
+            // Buat repository jika belum ada
+            await createRepository(token);
+        }
+        
+        showApp();
+        loadMediaFromGitHub();
+        
+    } catch (error) {
+        alert('Login gagal: ' + error.message);
+        console.error('Login error:', error);
+    }
+}
+
+// Fungsi untuk menangani pendaftaran
+async function handleRegister(e) {
+    e.preventDefault();
+    
+    const username = document.getElementById('register-username').value;
+    const email = document.getElementById('register-email').value;
+    const token = document.getElementById('register-token').value;
+    
+    try {
+        // Verifikasi kredensial dengan GitHub API
+        const userData = await verifyGitHubCredentials(username, token);
+        
+        // Buat repository
+        await createRepository(token);
+        
+        // Simpan data pengguna
+        currentUser = {
+            username,
+            token,
+            avatarUrl: userData.avatar_url,
+            name: userData.name || username
+        };
+        
+        localStorage.setItem('githubMediaUser', JSON.stringify(currentUser));
+        
+        showApp();
+        loadMediaFromGitHub();
+        
+    } catch (error) {
+        alert('Pendaftaran gagal: ' + error.message);
+        console.error('Registration error:', error);
+    }
+}
+
+// Fungsi untuk verifikasi kredensial GitHub
+async function verifyGitHubCredentials(username, token) {
+    const response = await fetch(`${GITHUB_API_BASE}/user`, {
+        headers: {
+            'Authorization': `token ${token}`,
+            'Accept': 'application/vnd.github.v3+json'
+        }
+    });
+    
+    if (!response.ok) {
+        throw new Error('Token tidak valid atau tidak memiliki izin yang cukup');
+    }
+    
+    const userData = await response.json();
+    
+    // Pastikan username cocok
+    if (userData.login.toLowerCase() !== username.toLowerCase()) {
+        throw new Error('Username tidak cocok dengan token');
+    }
+    
+    return userData;
+}
+
+// Fungsi untuk memeriksa apakah repository sudah ada
+async function checkRepositoryExists(username, token, repoName) {
+    try {
+        const response = await fetch(`${GITHUB_API_BASE}/repos/${username}/${repoName}`, {
+            headers: {
+                'Authorization': `token ${token}`,
+                'Accept': 'application/vnd.github.v3+json'
+            }
+        });
+        
+        return response.ok;
+    } catch (error) {
+        return false;
+    }
+}
+
+// Fungsi untuk membuat repository
+async function createRepository(token) {
+    const response = await fetch(`${GITHUB_API_BASE}/user/repos`, {
+        method: 'POST',
+        headers: {
+            'Authorization': `token ${token}`,
+            'Accept': 'application/vnd.github.v3+json',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            name: REPO_NAME,
+            description: REPO_DESCRIPTION,
+            auto_init: true,
+            private: false
+        })
+    });
+    
+    if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Gagal membuat repository');
+    }
+    
+    return await response.json();
+}
+
+// Fungsi untuk menampilkan aplikasi utama
+function showApp() {
+    authSection.classList.add('hidden');
+    appSection.classList.remove('hidden');
+    userNameSpan.textContent = currentUser.name;
+}
+
+// Fungsi untuk menangani logout
+function handleLogout() {
+    currentUser = null;
+    localStorage.removeItem('githubMediaUser');
+    appSection.classList.add('hidden');
+    authSection.classList.remove('hidden');
+    
+    // Reset form
+    loginForm.reset();
+    registerForm.reset();
+    switchAuthTab('login');
+}
+
+// Fungsi untuk menangani pemilihan file
+function handleFileSelect(e) {
+    handleFiles(e.target.files);
+}
+
+// Fungsi untuk menangani file yang dipilih/di-drop
+function handleFiles(files) {
+    if (files.length === 0) return;
+    
+    selectedFiles = Array.from(files);
+    
+    // Validasi file
+    for (const file of selectedFiles) {
+        if (file.size > 25 * 1024 * 1024) {
+            alert(`File ${file.name} terlalu besar. Maksimal ukuran file adalah 25MB.`);
+            resetUploadArea();
+            return;
+        }
+    }
+    
+    // Tampilkan tombol upload
+    uploadBtn.classList.remove('hidden');
+    
+    // Update UI upload area
+    uploadArea.innerHTML = `
+        <div class="file-preview">
+            <p>${selectedFiles.length} file siap diunggah</p>
+            <ul>
+                ${selectedFiles.map(file => `<li>${file.name} (${formatFileSize(file.size)})</li>`).join('')}
+            </ul>
+        </div>
+    `;
+}
+
+// Fungsi untuk mereset area upload
+function resetUploadArea() {
+    selectedFiles = [];
+    fileInput.value = '';
+    uploadBtn.classList.add('hidden');
+    uploadArea.innerHTML = `
+        <div class="upload-placeholder">
+            <div class="upload-icon">📁</div>
+            <p>Seret file ke sini atau <span class="browse-link">telusuri</span></p>
+            <small>Maksimal ukuran file: 25MB</small>
+        </div>
+    `;
+}
+
+// Fungsi untuk mengunggah file ke GitHub
+async function uploadToGitHub() {
+    if (selectedFiles.length === 0) return;
+    
+    try {
+        // Tampilkan progress bar
+        uploadProgress.classList.remove('hidden');
+        progressFill.style.width = '0%';
+        progressText.textContent = 'Mempersiapkan...';
+        
+        // Unggah setiap file
+        for (let i = 0; i < selectedFiles.length; i++) {
+            const file = selectedFiles[i];
+            
+            // Update progress
+            progressText.textContent = `Mengunggah ${i + 1} dari ${selectedFiles.length}: ${file.name}`;
+            
+            // Upload file ke GitHub
+            await uploadFileToGitHub(file, (progress) => {
+                progressFill.style.width = `${progress}%`;
+            });
+        }
+        
+        // Selesai
+        progressFill.style.width = '100%';
+        progressText.textContent = 'Upload selesai!';
+        
+        // Tunggu sebentar lalu refresh gallery
+        setTimeout(() => {
+            uploadProgress.classList.add('hidden');
+            resetUploadArea();
+            loadMediaFromGitHub();
+        }, 1500);
+        
+    } catch (error) {
+        alert('Upload gagal: ' + error.message);
+        console.error('Upload error:', error);
+        uploadProgress.classList.add('hidden');
+    }
+}
+
+// Fungsi untuk mengunggah file ke GitHub
+async function uploadFileToGitHub(file, progressCallback) {
+    // Buat path dengan mempertimbangkan folder saat ini
+    const basePath = currentPath ? `${currentPath}/` : '';
+    const path = `${basePath}${mediaType}s/${Date.now()}_${file.name}`;
+    const content = await toBase64(file);
+    
+    // GitHub API mengharuskan content dalam format base64
+    const response = await fetch(`${GITHUB_API_BASE}/repos/${currentUser.username}/${REPO_NAME}/contents/${path}`, {
+        method: 'PUT',
+        headers: {
+            'Authorization': `token ${currentUser.token}`,
+            'Accept': 'application/vnd.github.v3+json',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            message: `Menambahkan ${file.name} ke media gallery`,
+            content: content.split(',')[1] // Hapus data:image/...;base64,
+        })
+    });
+    
+    if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Gagal mengunggah file');
+    }
+    
+    return await response.json();
+}
+
+// Fungsi untuk memuat media dari GitHub - DIPERBAIKI
+async function loadMediaFromGitHub() {
+    try {
+        galleryGrid.innerHTML = '<div class="empty-state"><p>Memuat media...</p></div>';
+        
+        // Dapatkan daftar file dari repository
+        const media = await fetchMediaFromGitHub();
+        mediaItems = media;
+        
+        // Tampilkan media di gallery
+        renderGallery(media);
+        
+        // Update breadcrumb
+        updateBreadcrumb();
+        
+    } catch (error) {
+        console.error('Error loading media:', error);
+        galleryGrid.innerHTML = '<div class="empty-state"><p>Gagal memuat media. Pastikan repository "github-media-gallery" sudah dibuat dan token memiliki izin yang cukup.</p></div>';
+    }
+}
+
+// Fungsi untuk mengambil media dari GitHub - DIPERBAIKI
+async function fetchMediaFromGitHub() {
+    const media = [];
+    const folders = [];
+    
+    try {
+        // Gunakan GitHub API untuk mendapatkan daftar file dengan recursive parameter
+        const apiPath = currentPath ? 
+            `${GITHUB_API_BASE}/repos/${currentUser.username}/${REPO_NAME}/contents/${currentPath}` :
+            `${GITHUB_API_BASE}/repos/${currentUser.username}/${REPO_NAME}/contents`;
+            
+        const response = await fetch(apiPath, {
+            headers: {
+                'Authorization': `token ${currentUser.token}`,
+                'Accept': 'application/vnd.github.v3+json'
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error('Tidak dapat mengakses repository');
+        }
+        
+        const contents = await response.json();
+        
+        // Proses setiap item
+        for (const item of contents) {
+            if (item.type === 'dir') {
+                // Ini adalah folder
+                folders.push({
+                    name: item.name,
+                    path: item.path,
+                    type: 'folder',
+                    htmlUrl: item.html_url,
+                    date: item.name // Untuk folder, gunakan nama sebagai tanggal
+                });
+            } else if (item.type === 'file') {
+                // Ini adalah file
+                const pathParts = item.path.split('/');
+                const fileName = pathParts[pathParts.length - 1];
+                
+                // Tentukan tipe file berdasarkan path
+                let type = 'other';
+                if (item.path.includes('/images/')) type = 'image';
+                else if (item.path.includes('/videos/')) type = 'video';
+                else if (item.path.includes('/audio/')) type = 'audio';
+                
+                // Hanya tambahkan jika itu adalah file media
+                if (type !== 'other') {
+                    media.push({
+                        name: fileName,
+                        path: item.path,
+                        downloadUrl: item.download_url,
+                        htmlUrl: item.html_url,
+                        type: type,
+                        size: item.size,
+                        date: fileName.split('_')[0] // Ambil timestamp dari nama file
+                    });
+                }
+            }
+        }
+        
+    } catch (error) {
+        console.error('Error fetching media files:', error);
+        throw new Error('Tidak dapat mengambil data media dari GitHub');
+    }
+    
+    // Gabungkan folder dan media, lalu urutkan
+    const allItems = [...folders, ...media];
+    return allItems.sort((a, b) => {
+        // Folder di atas, lalu urutkan berdasarkan tanggal (terbaru pertama)
+        if (a.type === 'folder' && b.type !== 'folder') return -1;
+        if (a.type !== 'folder' && b.type === 'folder') return 1;
+        return parseInt(b.date || 0) - parseInt(a.date || 0);
+    });
+}
+
+// Fungsi untuk merender gallery
+function renderGallery(media) {
+    if (media.length === 0) {
+        galleryGrid.innerHTML = '<div class="empty-state"><p>Belum ada media di folder ini.</p></div>';
+        return;
+    }
+    
+    galleryGrid.innerHTML = '';
+    
+    media.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'media-card';
+        card.dataset.type = item.type;
+        
+        let thumbContent = '';
+        
+        if (item.type === 'folder') {
+            thumbContent = `
+                <div class="folder-thumb">
+                    <div class="folder-icon">📁</div>
+                    <span>${item.name}</span>
+                </div>
+            `;
+        } else if (item.type === 'image') {
+            thumbContent = `<img src="${item.downloadUrl}" alt="${item.name}" class="media-thumb">`;
+        } else if (item.type === 'video') {
+            thumbContent = `<video src="${item.downloadUrl}" class="media-thumb" poster="data:image/gif,AAAA"></video>`;
+        } else if (item.type === 'audio') {
+            thumbContent = `
+                <div class="audio-thumb">
+                    <div class="audio-icon">🎵</div>
+                </div>
+            `;
+        }
+        
+        card.innerHTML = `
+            ${thumbContent}
+            <div class="media-info">
+                <h4>${item.name}</h4>
+                <p>${item.type === 'folder' ? 'Folder' : formatFileSize(item.size)} • ${formatDate(item.date)}</p>
+            </div>
+        `;
+        
+        card.addEventListener('click', () => {
+            if (item.type === 'folder') {
+                // Navigasi ke folder
+                navigateToFolder(item.path);
+            } else {
+                // Tampilkan media di modal
+                showMediaModal(item);
+            }
+        });
+        
+        galleryGrid.appendChild(card);
+    });
+}
+
+// Fungsi untuk menavigasi ke folder
+function navigateToFolder(path) {
+    currentPath = path;
+    loadMediaFromGitHub();
+}
+
+// Fungsi untuk memperbarui breadcrumb
+function updateBreadcrumb() {
+    const parts = currentPath.split('/').filter(part => part);
+    
+    let breadcrumbHtml = '<span class="folder-crumb" data-path="">Media Gallery</span>';
+    
+    let currentPathSoFar = '';
+    parts.forEach(part => {
+        currentPathSoFar += `${part}/`;
+        breadcrumbHtml += `
+            <span class="folder-crumb-separator">/</span>
+            <span class="folder-crumb" data-path="${currentPathSoFar.slice(0, -1)}">${part}</span>
+        `;
+    });
+    
+    folderBreadcrumb.innerHTML = breadcrumbHtml;
+    
+    // Tambahkan event listener untuk breadcrumb
+    folderBreadcrumb.querySelectorAll('.folder-crumb').forEach(crumb => {
+        crumb.addEventListener('click', () => {
+            const path = crumb.dataset.path;
+            currentPath = path;
+            loadMediaFromGitHub();
+        });
+    });
+}
+
+// Fungsi untuk membuat folder baru
+async function createFolder() {
+    const folderName = folderNameInput.value.trim();
+    if (!folderName) {
+        alert('Masukkan nama folder terlebih dahulu');
+        return;
+    }
+    
+    try {
+        // Buat path folder
+        const basePath = currentPath ? `${currentPath}/` : '';
+        const path = `${basePath}${folderName}`;
+        
+        // GitHub API mengharuskan content dalam format base64 (kosong untuk folder)
+        const response = await fetch(`${GITHUB_API_BASE}/repos/${currentUser.username}/${REPO_NAME}/contents/${path}/.gitkeep`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `token ${currentUser.token}`,
+                'Accept': 'application/vnd.github.v3+json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                message: `Membuat folder ${folderName}`,
+                content: '' // File kosong
+            })
+        });
+        
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Gagal membuat folder');
+        }
+        
+        // Reset input
+        folderNameInput.value = '';
+        
+        // Refresh gallery
+        loadMediaFromGitHub();
+        
+    } catch (error) {
+        alert('Gagal membuat folder: ' + error.message);
+        console.error('Create folder error:', error);
+    }
+}
+
+// Fungsi untuk menampilkan media di modal
+function showMediaModal(media) {
+    mediaFilename.textContent = media.name;
+    mediaDate.textContent = `Diunggah pada: ${formatDate(media.date)}`;
+    mediaLink.href = media.htmlUrl;
+    
+    mediaContainer.innerHTML = '';
+    
+    if (media.type === 'image') {
+        const img = document.createElement('img');
+        img.src = media.downloadUrl;
+        img.alt = media.name;
+        img.style.maxWidth = '100%';
+        img.style.maxHeight = '70vh';
+        mediaContainer.appendChild(img);
+    } else if (media.type === 'video') {
+        const video = document.createElement('video');
+        video.src = media.downloadUrl;
+        video.controls = true;
+        video.style.maxWidth = '100%';
+        video.style.maxHeight = '70vh';
+        mediaContainer.appendChild(video);
+    } else if (media.type === 'audio') {
+        const audioContainer = document.createElement('div');
+        audioContainer.className = 'audio-container';
+        
+        const audioIcon = document.createElement('div');
+        audioIcon.className = 'audio-icon';
+        audioIcon.innerHTML = '🎵';
+        audioIcon.style.fontSize = '4rem';
+        audioIcon.style.marginBottom = '20px';
+        audioContainer.appendChild(audioIcon);
+        
+        const audio = document.createElement('audio');
+        audio.src = media.downloadUrl;
+        audio.controls = true;
+        audio.style.width = '100%';
+        audioContainer.appendChild(audio);
+        
+        mediaContainer.appendChild(audioContainer);
+    }
+    
+    mediaModal.classList.remove('hidden');
+}
+
+// Fungsi untuk memfilter gallery
+function filterGallery(filter) {
+    const cards = galleryGrid.querySelectorAll('.media-card');
+    
+    cards.forEach(card => {
+        if (filter === 'all' || card.dataset.type === filter) {
+            card.style.display = 'block';
+        } else {
+            card.style.display = 'none';
+        }
+    });
+}
+
+// Fungsi untuk mengunduh arsip semua media
+async function downloadAllMediaArchive() {
+    try {
+        // Tampilkan indikator loading
+        const originalText = downloadArchiveBtn.textContent;
+        downloadArchiveBtn.textContent = '⏳ Membuat arsip...';
+        downloadArchiveBtn.disabled = true;
+        
+        // Buat arsip ZIP menggunakan JSZip
+        const zip = new JSZip();
+        
+        // Fungsi rekursif untuk menambahkan file dan folder ke ZIP
+        async function addToZip(path, zipFolder) {
+            const apiPath = path ? 
+                `${GITHUB_API_BASE}/repos/${currentUser.username}/${REPO_NAME}/contents/${path}` :
+                `${GITHUB_API_BASE}/repos/${currentUser.username}/${REPO_NAME}/contents`;
+                
+            const response = await fetch(apiPath, {
+                headers: {
+                    'Authorization': `token ${currentUser.token}`,
+                    'Accept': 'application/vnd.github.v3+json'
+                }
+            });
+            
+            if (!response.ok) return;
+            
+            const contents = await response.json();
+            
+            for (const item of contents) {
+                if (item.type === 'dir') {
+                    // Buat folder baru di ZIP dan tambahkan isinya
+                    const newFolder = zipFolder.folder(item.name);
+                    await addToZip(item.path, newFolder);
+                } else if (item.type === 'file') {
+                    // Tambahkan file ke ZIP
+                    try {
+                        const fileResponse = await fetch(item.download_url);
+                        const blob = await fileResponse.blob();
+                        zipFolder.file(item.name, blob);
+                    } catch (error) {
+                        console.error(`Gagal mengunduh file ${item.name}:`, error);
+                    }
+                }
+            }
+        }
+        
+        // Mulai membuat ZIP dari root
+        await addToZip('', zip);
+        
+        // Hasilkan file ZIP
+        const zipBlob = await zip.generateAsync({type: 'blob'});
+        
+        // Buat URL untuk download
+        const downloadUrl = URL.createObjectURL(zipBlob);
+        const a = document.createElement('a');
+        a.href = downloadUrl;
+        a.download = `github-media-gallery-${new Date().toISOString().split('T')[0]}.zip`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        
+        // Bersihkan URL
+        setTimeout(() => URL.revokeObjectURL(downloadUrl), 100);
+        
+        // Kembalikan teks tombol
+        downloadArchiveBtn.textContent = originalText;
+        downloadArchiveBtn.disabled = false;
+        
+    } catch (error) {
+        console.error('Error creating archive:', error);
+        alert('Gagal membuat arsip: ' + error.message);
+        
+        // Kembalikan teks tombol jika gagal
+        downloadArchiveBtn.textContent = '📦 Download Arsip';
+        downloadArchiveBtn.disabled = false;
+    }
+}
+
+// Fungsi utilitas: Convert file ke base64
+function toBase64(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = error => reject(error);
+    });
+}
+
+// Fungsi utilitas: Format ukuran file
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+// Fungsi utilitas: Format tanggal
+function formatDate(timestamp) {
+    if (!timestamp) return 'Tanggal tidak diketahui';
+    
+    // Jika timestamp adalah string nama folder, gunakan itu
+    if (isNaN(timestamp)) {
+        return timestamp;
+    }
+    
+    const date = new Date(parseInt(timestamp));
+    return new Intl.DateTimeFormat('id-ID', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    }).format(date);
+}
+    </script>
+</body>
+</html>
