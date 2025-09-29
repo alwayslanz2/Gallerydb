@@ -585,7 +585,7 @@ audio {
                     <div class="upload-placeholder">
                         <div class="upload-icon">📁</div>
                         <p>Seret file ke sini atau <span class="browse-link">telusuri</span></p>
-                        <small>Maksimal ukuran file: 25MB</small>
+                        <small>Maksimal ukuran file: 1000MB</small>
                     </div>
                 </div>
                 <input type="file" id="file-input" multiple style="display: none;">
@@ -964,8 +964,8 @@ function handleFiles(files) {
     
     // Validasi file
     for (const file of selectedFiles) {
-        if (file.size > 25 * 1024 * 1024) {
-            alert(`File ${file.name} terlalu besar. Maksimal ukuran file adalah 25MB.`);
+        if (file.size > 1000 * 1024 * 1024) {
+            alert(`File ${file.name} terlalu besar. Maksimal ukuran file adalah 1000MB.`);
             resetUploadArea();
             return;
         }
@@ -994,7 +994,7 @@ function resetUploadArea() {
         <div class="upload-placeholder">
             <div class="upload-icon">📁</div>
             <p>Seret file ke sini atau <span class="browse-link">telusuri</span></p>
-            <small>Maksimal ukuran file: 25MB</small>
+            <small>Maksimal ukuran file: 1000MB</small>
         </div>
     `;
 }
